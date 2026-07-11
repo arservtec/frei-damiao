@@ -1,3 +1,14 @@
+2021;12;receita;TAXA ORDINÁRIA;Apto 001, 002, 003 / Apto 102, 103 / Apto 201, 202, 203 / Apto 301, 302, 303;2750.00
+2021;12;despesa;Zelador;;717.10
+2021;12;despesa;Zelador - 2ª Parc. 13°;;358.55
+2021;12;despesa;COMPESA - CONTA + ACORDO;NOV/21;1628.88
+2021;12;despesa;MULTA APTO 303;NOV/21;250.00
+2021;12;despesa;CELPE- DEZ/21;DEZ/21;284.89
+2021;12;despesa;Material de limpeza/diversos;DEZ/21;118.00
+2021;12;despesa;Limpeza de Cxs de gorduras- OUT/21;3/5-JAN/22;219.32
+2021;12;despesa;Material p/ Administrativo Tx boleto - ASAAS APP;DEZ/21;20.21
+2021;12;despesa;Material hidráulico (Reg. e outros);2/4-JAN/22;118.70
+2021;12;despesa;Material p/reforma das cadeiras;2/4-JAN/22;62.85
 2021;11;receita;TAXA ORDINÁRIA;Apto 001, 002, 003, Apto 102, 103, Apto 201, 202, 203, Apto 301, 302, 303;2750.00
 2021;11;receita;Juros por atraso;Juros por atraso NOV/21;5.96
 2021;11;receita;MULTA APTO 301;MULTA APTO 301 NOV/21;250.00
