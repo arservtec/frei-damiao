@@ -3,834 +3,601 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Gestão Financeira do Condomínio</title>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<title>Condomínio Frei Damião - Controle Financeiro</title>
 <style>
+  :root {
+    --bg: #f4f6f8;
+    --card: #ffffff;
+    --text: #1f2937;
+    --primary: #2563eb;
+    --primary-dark: #1d4ed8;
+    --receita: #16a34a;
+    --despesa: #dc2626;
+    --border: #e5e7eb;
+  }
+  body.dark {
+    --bg: #111827;
+    --card: #1f2937;
+    --text: #f3f4f6;
+    --border: #374151;
+  }
   * { box-sizing: border-box; }
   body {
-    font-family: -apple-system, Roboto, Arial, sans-serif;
-    margin: 0; padding: 0;
-    background: #f4f6f8;
-    color: #222;
+    margin: 0;
+    font-family: system-ui, Segoe UI, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    transition: background .3s, color .3s;
   }
   header {
-    background: #2c3e50;
-    color: white;
-    padding: 16px;
-    text-align: center;
-    position: relative;
-  }
-  header h1 { margin: 0; font-size: 1.3rem; }
-  #btnModo {
-    position: absolute;
-    top: 14px;
-    right: 14px;
-    width: auto;
-    padding: 6px 10px;
-    font-size: 0.75rem;
-    background: #7f8c8d;
-    border-radius: 6px;
-    border: none;
-    color: white;
-    cursor: pointer;
-  }
-  #btnModo.ativo { background: #27ae60; }
-  .seletor-ano {
-    margin-top: 10px;
+    background: var(--primary);
+    color: #fff;
+    padding: 16px 20px;
     display: flex;
-    justify-content: center;
+    justify-content: space-between;
     align-items: center;
+    flex-wrap: wrap;
     gap: 8px;
   }
-  .seletor-ano select {
-    width: auto;
-    padding: 6px 10px;
-    border-radius: 6px;
-    border: none;
-    font-weight: bold;
-  }
+  header h1 { margin: 0; font-size: 1.3rem; }
   .container {
-    max-width: 900px;
-    margin: 0 auto;
-    padding: 12px;
+    max-width: 1000px;
+    margin: 20px auto;
+    padding: 0 16px;
   }
   .card {
-    background: white;
+    background: var(--card);
+    border: 1px solid var(--border);
     border-radius: 10px;
     padding: 16px;
-    margin-bottom: 16px;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
   }
-  .card h2 { margin-top: 0; font-size: 1.1rem; color: #2c3e50; }
-  label { display: block; font-size: 0.85rem; margin: 8px 0 4px; color: #555; }
-  input, select, textarea, button {
+  .card h2 { margin-top: 0; font-size: 1.1rem; }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 10px;
+  }
+  label { font-size: .82rem; display: block; margin-bottom: 4px; }
+  input, select, button {
     width: 100%;
-    padding: 10px;
-    font-size: 1rem;
-    border: 1px solid #ccc;
+    padding: 8px;
     border-radius: 6px;
+    border: 1px solid var(--border);
+    background: var(--card);
+    color: var(--text);
+    font-size: .9rem;
   }
   button {
-    background: #2c3e50;
-    color: white;
+    background: var(--primary);
+    color: #fff;
     border: none;
-    margin-top: 12px;
     cursor: pointer;
-    font-weight: bold;
+    font-weight: 600;
   }
-  button:hover { background: #1a252f; }
-  .btn-secondary { background: #7f8c8d; }
-  .btn-danger { background: #c0392b; }
+  button:hover { background: var(--primary-dark); }
+  button.secondary { background: #6b7280; }
+  button.secondary:hover { background: #4b5563; }
   table {
     width: 100%;
     border-collapse: collapse;
-    font-size: 0.8rem;
-    margin-top: 10px;
+    font-size: .85rem;
   }
   th, td {
-    border-bottom: 1px solid #eee;
-    padding: 6px 4px;
-    text-align: right;
+    border-bottom: 1px solid var(--border);
+    padding: 8px 6px;
+    text-align: left;
   }
-  th:first-child, td:first-child { text-align: left; }
-  .receita { color: #27ae60; }
-  .despesa { color: #c0392b; }
-  .fundo { color: #2980b9; }
-  .row-flex { display: flex; gap: 8px; }
-  .row-flex > div { flex: 1; }
-  .small-note { font-size: 0.75rem; color: #888; margin-top: 4px; }
-  .lancamentos-lista { max-height: 260px; overflow-y: auto; margin-top: 10px; }
-  .item-lanc {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 6px 0;
-    border-bottom: 1px solid #f0f0f0;
-    font-size: 0.85rem;
-    gap: 8px;
+  th { color: #6b7280; font-weight: 600; }
+  .receita { color: var(--receita); font-weight: 600; }
+  .despesa { color: var(--despesa); font-weight: 600; }
+  .resumo {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 12px;
   }
-  .item-lanc .info { display: flex; align-items: center; gap: 8px; flex: 1; }
-  .item-lanc input[type="checkbox"] { width: auto; margin: 0; }
-  .somente-edicao { display: none; }
-  .aviso-leitura {
-    background: #fff3cd;
-    border: 1px solid #ffe69c;
-    color: #7a5b00;
-    padding: 10px;
-    border-radius: 6px;
-    font-size: 0.85rem;
+  .resumo div {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px;
     text-align: center;
-    margin-bottom: 16px;
   }
-  .barra-selecao {
-    display: none;
-    background: #ffe8e8;
-    border: 1px solid #f5b7b7;
-    border-radius: 6px;
-    padding: 8px 10px;
-    margin-bottom: 10px;
-    align-items: center;
-    justify-content: space-between;
-    font-size: 0.85rem;
-  }
-  .barra-selecao.ativa { display: flex; }
-  .barra-selecao button {
+  .resumo strong { display: block; font-size: 1.2rem; margin-top: 4px; }
+  .toolbar { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+  .toolbar button { width: auto; padding: 8px 14px; }
+  .msg { font-size: .8rem; margin-top: 6px; min-height: 16px; }
+  .msg.erro { color: var(--despesa); }
+  .msg.ok { color: var(--receita); }
+  .status-remoto { font-size: .75rem; opacity: .8; margin-top: 4px; }
+  .icon-btn {
+    background: transparent;
+    border: 1px solid rgba(255,255,255,.5);
+    color: #fff;
     width: auto;
-    margin: 0;
     padding: 6px 10px;
-    font-size: 0.8rem;
-    background: #c0392b;
   }
-  .barra-selecao .btn-cancelar { background: #7f8c8d; margin-left: 6px; }
-  .tag-auto {
-    font-size: 0.7rem;
-    color: #2980b9;
-    font-weight: normal;
-  }
+  .oculto { display: none; }
+  footer { text-align: center; font-size: .75rem; padding: 20px; opacity: .6; }
 </style>
 </head>
 <body>
 
 <header>
-  <h1>🏢 Gestão Financeira do Condomínio</h1>
-  <div class="seletor-ano">
-    <label style="margin:0; color:white; font-size:0.85rem;">Ano:</label>
-    <select id="seletorAno" onchange="mudarAno()"></select>
-  </div>
-  <button id="btnModo" onclick="alternarModo()">🔒 Entrar em modo edição</button>
+  <h1>🏢 Condomínio Frei Damião</h1>
+  <button class="icon-btn" id="btnModo">🌙 Modo escuro</button>
 </header>
 
 <div class="container">
 
-  <div class="aviso-leitura" id="avisoLeitura">
-    👁️ Modo leitura — visualização das receitas, despesas e evolução do condomínio.
+  <!-- STATUS DE SINCRONIZAÇÃO -->
+  <div class="card">
+    <h2>📡 Sincronização de dados</h2>
+    <p class="status-remoto" id="statusRemoto">Carregando dados do GitHub...</p>
+    <div class="toolbar">
+      <button class="secondary" id="btnRecarregar">🔄 Recarregar dados do GitHub</button>
+    </div>
   </div>
 
-  <!-- SALDO INICIAL -->
-  <div class="card somente-edicao" id="cardSaldoInicial">
-    <h2>💰 Saldo de Caixa Inicial</h2>
-    <p class="small-note">
-      Informe o saldo de caixa existente <b>antes</b> do primeiro lançamento de Janeiro do ano selecionado.
-      Se deixado em branco, o valor é calculado <b>automaticamente</b> como o saldo acumulado final de
-      dezembro do ano anterior (encadeamento entre anos).
-    </p>
-    <label>Saldo inicial de <span id="anoSaldoInicial"></span> (R$)</label>
-    <input type="number" id="inSaldoInicial" step="0.01" placeholder="0.00" onchange="salvarSaldoInicial()">
-    <button class="btn-secondary" type="button" onclick="removerSaldoInicialManual()">
-      Remover valor manual (voltar ao automático)
-    </button>
+  <!-- LOGIN DE EDIÇÃO -->
+  <div class="card">
+    <h2>🔐 Modo de edição</h2>
+    <div id="loginArea" class="grid">
+      <div>
+        <label>Senha de edição</label>
+        <input type="password" id="inputSenha" placeholder="Digite a senha">
+      </div>
+      <div style="align-self:end;">
+        <button id="btnEntrar">Entrar em modo de edição</button>
+      </div>
+    </div>
+    <p class="msg" id="msgLogin"></p>
+    <div id="areaLogado" class="oculto">
+      <p class="msg ok">✅ Modo de edição ativo.</p>
+      <button class="secondary" id="btnSair">Sair do modo de edição</button>
+    </div>
   </div>
 
-  <!-- LANÇAMENTO MANUAL -->
-  <div class="card somente-edicao" id="cardLancamento">
-    <h2>➕ Novo Lançamento</h2>
-    <div class="row-flex">
+  <!-- FORMULÁRIO DE LANÇAMENTO (só aparece logado) -->
+  <div class="card oculto" id="cardLancamento">
+    <h2>➕ Novo lançamento</h2>
+    <div class="grid">
       <div>
         <label>Ano</label>
-        <input type="number" id="inAno" placeholder="Ex: 2026">
+        <input type="number" id="inputAno" placeholder="2026">
       </div>
       <div>
         <label>Mês</label>
-        <select id="inMes"></select>
+        <select id="inputMes">
+          <option value="1">Janeiro</option>
+          <option value="2">Fevereiro</option>
+          <option value="3">Março</option>
+          <option value="4">Abril</option>
+          <option value="5">Maio</option>
+          <option value="6">Junho</option>
+          <option value="7">Julho</option>
+          <option value="8">Agosto</option>
+          <option value="9">Setembro</option>
+          <option value="10">Outubro</option>
+          <option value="11">Novembro</option>
+          <option value="12">Dezembro</option>
+        </select>
       </div>
-    </div>
-    <label>Tipo</label>
-    <select id="inTipo">
-      <option value="receita">Receita</option>
-      <option value="despesa">Despesa</option>
-      <option value="fundo">Fundo de Reserva</option>
-    </select>
-    <label>Categoria</label>
-    <input type="text" id="inCategoria" placeholder="Ex: Taxa condominial, Manutenção, Energia...">
-    <label>Descrição</label>
-    <input type="text" id="inDescricao" placeholder="Detalhe do lançamento">
-    <label>Valor (R$)</label>
-    <input type="number" id="inValor" step="0.01" placeholder="0.00">
-    <button onclick="adicionarLancamento()">Adicionar Lançamento</button>
-  </div>
-
-  <!-- IMPORTAÇÃO -->
-  <div class="card somente-edicao" id="cardImportacao">
-    <h2>📄 Importar de arquivo .txt</h2>
-    <p class="small-note">
-      Formato esperado por linha: <code>ano;mes;tipo;categoria;descricao;valor</code><br>
-      Ex: <code>2026;3;receita;Taxa condominial;Cota março;15000.00</code><br>
-      tipo = receita, despesa ou fundo
-    </p>
-    <label>Carregar arquivo local (.txt)</label>
-    <input type="file" id="fileInput" accept=".txt">
-    <label>Ou colar o conteúdo diretamente</label>
-    <textarea id="textareaImport" rows="4" placeholder="Cole aqui as linhas..."></textarea>
-    <button onclick="importarTextarea()">Importar do texto colado</button>
-    <div class="small-note">
-      <b>Para que os moradores vejam os mesmos dados que você:</b> hospede um arquivo .txt público
-      e cole a URL abaixo. O app carrega automaticamente ao abrir.<br><br>
-      ⚠️ <b>Google Drive geralmente não funciona</b> (bloqueia CORS). Use um link
-      <b>"Raw"</b> do GitHub — é gratuito, público e confiável:
-      <code>https://raw.githubusercontent.com/usuario/repo/main/dados.txt</code>
-    </div>
-    <label>URL do arquivo .txt remoto (opcional)</label>
-    <input type="text" id="urlRemota" placeholder="https://raw.githubusercontent.com/.../dados.txt">
-    <button class="btn-secondary" onclick="carregarURLRemota()">Carregar da URL</button>
-  </div>
-
-  <!-- RESUMO MENSAL -->
-  <div class="card">
-    <h2>📊 Resumo Mensal — <span id="anoResumo"></span></h2>
-    <table id="tabelaResumo">
-      <thead>
-        <tr>
-          <th>Mês</th>
-          <th>Receita</th>
-          <th>Despesa</th>
-          <th>Saldo Mensal</th>
-          <th>Saldo Acumulado</th>
-          <th>Fundo Reserva (acum.)</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-  </div>
-
-  <!-- GRÁFICO -->
-  <div class="card">
-    <h2>📈 Evolução Mensal</h2>
-    <canvas id="grafico" height="220"></canvas>
-  </div>
-
-  <!-- LISTA DE LANÇAMENTOS -->
-  <div class="card">
-    <h2>🧾 Lançamentos do Mês</h2>
-    <label>Filtrar por mês</label>
-    <select id="filtroMes" onchange="renderizarLista()"></select>
-
-    <div class="barra-selecao" id="barraSelecao">
-      <span id="contadorSelecionados">0 selecionado(s)</span>
       <div>
-        <button onclick="excluirSelecionados()">🗑️ Excluir selecionados</button>
-        <button class="btn-cancelar" onclick="cancelarSelecao()">Cancelar</button>
+        <label>Tipo</label>
+        <select id="inputTipo">
+          <option value="receita">Receita</option>
+          <option value="despesa">Despesa</option>
+        </select>
+      </div>
+      <div>
+        <label>Categoria</label>
+        <input type="text" id="inputCategoria" placeholder="Ex: Taxa condominial, Manutenção...">
+      </div>
+      <div style="grid-column: 1 / -1;">
+        <label>Descrição</label>
+        <input type="text" id="inputDescricao" placeholder="Detalhes do lançamento">
+      </div>
+      <div>
+        <label>Valor (R$)</label>
+        <input type="number" step="0.01" id="inputValor" placeholder="0,00">
+      </div>
+      <div style="align-self:end;">
+        <button id="btnAdicionar">Adicionar lançamento</button>
       </div>
     </div>
+    <p class="msg" id="msgLancamento"></p>
 
-    <div class="lancamentos-lista" id="listaLancamentos"></div>
+    <div class="toolbar">
+      <button class="secondary" id="btnExportar">⬇️ Exportar dados (.txt)</button>
+      <label class="secondary" style="width:auto; display:inline-flex; align-items:center; padding:8px 14px; cursor:pointer; border-radius:6px; background:#6b7280; color:#fff;">
+        ⬆️ Importar .txt
+        <input type="file" id="inputImportar" accept=".txt" style="display:none;">
+      </label>
+      <button class="secondary" id="btnLimparTudo">🗑️ Limpar todos os dados</button>
+    </div>
+    <p class="msg" id="msgArquivo"></p>
   </div>
 
-  <!-- EXPORTAR / RESET -->
-  <div class="card somente-edicao" id="cardOpcoes">
-    <h2>⚙️ Opções</h2>
-    <button class="btn-secondary" onclick="exportarTXT()">Exportar dados (.txt)</button>
-    <button class="btn-danger" onclick="limparAno()">Limpar dados do ano selecionado</button>
-    <button class="btn-danger" onclick="limparTudo()">Limpar TODOS os anos</button>
+  <!-- FILTROS -->
+  <div class="card">
+    <h2>📊 Filtros</h2>
+    <div class="grid">
+      <div>
+        <label>Ano</label>
+        <select id="filtroAno"><option value="todos">Todos</option></select>
+      </div>
+      <div>
+        <label>Mês</label>
+        <select id="filtroMes">
+          <option value="todos">Todos</option>
+          <option value="1">Janeiro</option>
+          <option value="2">Fevereiro</option>
+          <option value="3">Março</option>
+          <option value="4">Abril</option>
+          <option value="5">Maio</option>
+          <option value="6">Junho</option>
+          <option value="7">Julho</option>
+          <option value="8">Agosto</option>
+          <option value="9">Setembro</option>
+          <option value="10">Outubro</option>
+          <option value="11">Novembro</option>
+          <option value="12">Dezembro</option>
+        </select>
+      </div>
+      <div>
+        <label>Tipo</label>
+        <select id="filtroTipo">
+          <option value="todos">Todos</option>
+          <option value="receita">Receita</option>
+          <option value="despesa">Despesa</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- RESUMO -->
+  <div class="card">
+    <h2>💰 Resumo</h2>
+    <div class="resumo">
+      <div>Receitas<strong class="receita" id="totalReceitas">R$ 0,00</strong></div>
+      <div>Despesas<strong class="despesa" id="totalDespesas">R$ 0,00</strong></div>
+      <div>Saldo<strong id="saldoTotal">R$ 0,00</strong></div>
+    </div>
+  </div>
+
+  <!-- TABELA -->
+  <div class="card">
+    <h2>📋 Lançamentos</h2>
+    <div style="overflow-x:auto;">
+      <table id="tabelaLancamentos">
+        <thead>
+          <tr>
+            <th>Ano</th><th>Mês</th><th>Tipo</th><th>Categoria</th><th>Descrição</th><th>Valor</th><th id="thAcao" class="oculto">Ação</th>
+          </tr>
+        </thead>
+        <tbody id="corpoTabela"></tbody>
+      </table>
+    </div>
   </div>
 
 </div>
 
+<footer>Condomínio Frei Damião — Controle Financeiro • Dados sincronizados via GitHub</footer>
+
 <script>
-// ⚠️ Altere esta senha antes de publicar o app.
-const SENHA_EDICAO = "condominio2026";
+/* ===================== CONFIGURAÇÕES ===================== */
+const SENHA_EDICAO = "condominio2026"; // altere para a senha desejada
+const URL_DADOS_REMOTOS = "https://raw.githubusercontent.com/arservtec/frei-damiao/refs/heads/main/dados_condominio.txt";
+const NOME_ARMAZENAMENTO = "condominioFreiDamiaoDados";
 
-const meses = ["Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","Nov","Dez"];
-let dados = JSON.parse(localStorage.getItem("condominioDados") || "[]");
-let saldosIniciais = JSON.parse(localStorage.getItem("condominioSaldosIniciais") || "{}");
-let chart = null;
-let modoEdicao = sessionStorage.getItem("modoEdicao") === "true";
-let anoSelecionado = parseInt(localStorage.getItem("anoSelecionado")) || new Date().getFullYear();
-let selecionados = new Set(); // índices selecionados para exclusão em lote
+const nomesMeses = ["", "Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
 
-function alternarModo() {
-  if (modoEdicao) {
-    modoEdicao = false;
-    sessionStorage.removeItem("modoEdicao");
-    aplicarModo();
-    return;
+let dados = [];
+let modoEdicao = false;
+
+/* ===================== ELEMENTOS ===================== */
+const el = id => document.getElementById(id);
+
+const statusRemoto = el("statusRemoto");
+const btnRecarregar = el("btnRecarregar");
+
+const inputSenha = el("inputSenha");
+const btnEntrar = el("btnEntrar");
+const btnSair = el("btnSair");
+const msgLogin = el("msgLogin");
+const areaLogado = el("areaLogado");
+const cardLancamento = el("cardLancamento");
+const thAcao = el("thAcao");
+
+const inputAno = el("inputAno");
+const inputMes = el("inputMes");
+const inputTipo = el("inputTipo");
+const inputCategoria = el("inputCategoria");
+const inputDescricao = el("inputDescricao");
+const inputValor = el("inputValor");
+const btnAdicionar = el("btnAdicionar");
+const msgLancamento = el("msgLancamento");
+
+const btnExportar = el("btnExportar");
+const inputImportar = el("inputImportar");
+const btnLimparTudo = el("btnLimparTudo");
+const msgArquivo = el("msgArquivo");
+
+const filtroAno = el("filtroAno");
+const filtroMes = el("filtroMes");
+const filtroTipo = el("filtroTipo");
+
+const totalReceitas = el("totalReceitas");
+const totalDespesas = el("totalDespesas");
+const saldoTotal = el("saldoTotal");
+const corpoTabela = el("corpoTabela");
+
+const btnModo = el("btnModo");
+
+/* ===================== UTIL ===================== */
+function formatarMoeda(valor) {
+  return valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+}
+
+function salvarLocal() {
+  localStorage.setItem(NOME_ARMAZENAMENTO, JSON.stringify(dados));
+}
+
+function carregarLocal() {
+  const salvo = localStorage.getItem(NOME_ARMAZENAMENTO);
+  if (salvo) {
+    try { dados = JSON.parse(salvo); } catch (e) { dados = []; }
   }
-  const senha = prompt("Digite a senha para entrar em modo edição:");
-  if (senha === null) return;
-  if (senha === SENHA_EDICAO) {
-    modoEdicao = true;
-    sessionStorage.setItem("modoEdicao", "true");
-    aplicarModo();
-  } else {
-    alert("Senha incorreta.");
-  }
 }
 
-function aplicarModo() {
-  const btn = document.getElementById("btnModo");
-  const aviso = document.getElementById("avisoLeitura");
-  const elementosEdicao = document.querySelectorAll(".somente-edicao");
-
-  if (modoEdicao) {
-    btn.textContent = "🔓 Sair do modo edição";
-    btn.classList.add("ativo");
-    aviso.style.display = "none";
-    elementosEdicao.forEach(el => el.style.display = "block");
-  } else {
-    btn.textContent = "🔒 Entrar em modo edição";
-    btn.classList.remove("ativo");
-    aviso.style.display = "block";
-    elementosEdicao.forEach(el => el.style.display = "none");
-  }
-  selecionados.clear();
-  renderizarLista();
-}
-
-function salvar() {
-  localStorage.setItem("condominioDados", JSON.stringify(dados));
-  atualizarTudo();
-}
-
-// Define manualmente o saldo inicial do ano selecionado.
-function salvarSaldoInicial() {
-  const valor = parseFloat(document.getElementById("inSaldoInicial").value);
-  if (isNaN(valor)) {
-    delete saldosIniciais[anoSelecionado];
-  } else {
-    saldosIniciais[anoSelecionado] = valor;
-  }
-  localStorage.setItem("condominioSaldosIniciais", JSON.stringify(saldosIniciais));
-  atualizarTudo();
-}
-
-// Remove o valor manual, fazendo o saldo inicial voltar a ser calculado automaticamente
-// a partir do saldo acumulado final de dezembro do ano anterior.
-function removerSaldoInicialManual() {
-  if (!modoEdicao) return;
-  delete saldosIniciais[anoSelecionado];
-  localStorage.setItem("condominioSaldosIniciais", JSON.stringify(saldosIniciais));
-  atualizarTudo();
-}
-
-function popularSelects() {
-  const selMes = document.getElementById("inMes");
-  const filtroMes = document.getElementById("filtroMes");
-  selMes.innerHTML = "";
-  filtroMes.innerHTML = '<option value="0">Todos os meses</option>';
-  meses.forEach((m, i) => {
-    selMes.innerHTML += `<option value="${i+1}">${m}</option>`;
-    filtroMes.innerHTML += `<option value="${i+1}">${m}</option>`;
-  });
-  document.getElementById("inAno").value = anoSelecionado;
-}
-
-function obterAnosDisponiveis() {
-  const anos = new Set(dados.map(d => d.ano));
-  Object.keys(saldosIniciais).forEach(a => anos.add(parseInt(a)));
-  anos.add(anoSelecionado);
-  anos.add(new Date().getFullYear());
-  return Array.from(anos).sort((a, b) => a - b);
-}
-
-function popularSeletorAno() {
-  const sel = document.getElementById("seletorAno");
-  const anos = obterAnosDisponiveis();
-  sel.innerHTML = "";
-  anos.forEach(a => {
-    sel.innerHTML += `<option value="${a}" ${a === anoSelecionado ? "selected" : ""}>${a}</option>`;
-  });
-  sel.innerHTML += `<option value="novo">+ Novo ano...</option>`;
-}
-
-function mudarAno() {
-  const sel = document.getElementById("seletorAno");
-  if (sel.value === "novo") {
-    const novoAno = prompt("Digite o novo ano (ex: 2027):");
-    const anoNum = parseInt(novoAno);
-    if (!anoNum || isNaN(anoNum)) {
-      popularSeletorAno();
-      return;
-    }
-    anoSelecionado = anoNum;
-  } else {
-    anoSelecionado = parseInt(sel.value);
-  }
-  localStorage.setItem("anoSelecionado", anoSelecionado);
-  document.getElementById("inAno").value = anoSelecionado;
-  popularSeletorAno();
-  selecionados.clear();
-  atualizarTudo();
-}
-
-function adicionarLancamento() {
-  if (!modoEdicao) { alert("Entre em modo edição para lançar dados."); return; }
-  const ano = parseInt(document.getElementById("inAno").value);
-  const mes = parseInt(document.getElementById("inMes").value);
-  const tipo = document.getElementById("inTipo").value;
-  const categoria = document.getElementById("inCategoria").value.trim();
-  const descricao = document.getElementById("inDescricao").value.trim();
-  const valor = parseFloat(document.getElementById("inValor").value);
-
-  if (!ano || !categoria || isNaN(valor)) {
-    alert("Preencha ano, categoria e valor corretamente.");
-    return;
-  }
-
-  dados.push({ ano, mes, tipo, categoria, descricao, valor });
-  salvar();
-  popularSeletorAno();
-
-  document.getElementById("inCategoria").value = "";
-  document.getElementById("inDescricao").value = "";
-  document.getElementById("inValor").value = "";
-}
-
+/* Formato de cada linha do .txt: ano;mes;tipo;categoria;descricao;valor */
 function parseLinha(linha) {
   const partes = linha.split(";");
   if (partes.length < 6) return null;
   const [ano, mes, tipo, categoria, descricao, valor] = partes;
-  const tipoLimpo = tipo.trim().toLowerCase();
-  if (!["receita","despesa","fundo"].includes(tipoLimpo)) return null;
   return {
-    ano: parseInt(ano),
-    mes: parseInt(mes),
-    tipo: tipoLimpo,
+    ano: parseInt(ano.trim(), 10),
+    mes: parseInt(mes.trim(), 10),
+    tipo: tipo.trim().toLowerCase(),
     categoria: categoria.trim(),
     descricao: descricao.trim(),
-    valor: parseFloat(valor.replace(",", "."))
+    valor: parseFloat(valor.trim().replace(",", "."))
   };
 }
 
-function importarLinhas(texto) {
-  const linhas = texto.split("\n").map(l => l.trim()).filter(l => l);
-  let count = 0;
-  linhas.forEach(l => {
-    const item = parseLinha(l);
-    if (item && !isNaN(item.ano) && !isNaN(item.mes) && !isNaN(item.valor)) {
-      dados.push(item);
-      count++;
-    }
-  });
-  salvar();
-  popularSeletorAno();
-  alert(`${count} lançamento(s) importado(s).`);
+function linhaDeItem(item) {
+  return [item.ano, item.mes, item.tipo, item.categoria, item.descricao, item.valor].join(";");
 }
 
-document.getElementById("fileInput").addEventListener("change", function(e) {
-  if (!modoEdicao) return;
-  const file = e.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = function(ev) {
-    importarLinhas(ev.target.result);
-  };
-  reader.readAsText(file, "UTF-8");
-});
-
-function importarTextarea() {
-  if (!modoEdicao) { alert("Entre em modo edição para importar dados."); return; }
-  const texto = document.getElementById("textareaImport").value;
-  if (!texto.trim()) return;
-  importarLinhas(texto);
-  document.getElementById("textareaImport").value = "";
-}
-
-// Valida a resposta remota e dá mensagem de erro clara em caso de bloqueio/CORS/link errado.
-function carregarURLRemota() {
-  const url = document.getElementById("urlRemota").value.trim();
-  if (!url) return;
-
-  fetch(url)
+/* ===================== SINCRONIZAÇÃO COM GITHUB ===================== */
+function carregarDadosRemotos(manual = false) {
+  statusRemoto.textContent = "🔄 Buscando dados atualizados no GitHub...";
+  fetch(URL_DADOS_REMOTOS, { cache: "no-store" })
     .then(res => {
-      if (!res.ok) {
-        throw new Error(`O servidor respondeu com status ${res.status}. Verifique se o link é público e correto.`);
-      }
-      const contentType = res.headers.get("content-type") || "";
-      if (contentType.includes("text/html")) {
-        throw new Error(
-          "O link retornou uma página HTML, não um arquivo de texto puro. " +
-          "Isso costuma acontecer com links de compartilhamento do Google Drive. " +
-          "Use um link 'Raw' do GitHub."
-        );
-      }
+      if (!res.ok) throw new Error("Status " + res.status);
       return res.text();
     })
     .then(texto => {
-      dados = []; // substitui totalmente pelos dados remotos
-      importarLinhas(texto);
+      const linhas = texto.split("\n").map(l => l.trim()).filter(l => l);
+      const novosDados = [];
+      linhas.forEach(l => {
+        const item = parseLinha(l);
+        if (item && !isNaN(item.ano) && !isNaN(item.mes) && !isNaN(item.valor)) {
+          novosDados.push(item);
+        }
+      });
+      dados = novosDados;
+      salvarLocal();
+      popularSeletorAno();
+      atualizarTudo();
+      const agora = new Date().toLocaleTimeString("pt-BR");
+      statusRemoto.textContent = `✅ Dados atualizados às ${agora} (${dados.length} lançamentos).`;
     })
     .catch(err => {
-      alert(
-        "❌ Erro ao carregar URL remota.\n\n" +
-        "Causas mais comuns:\n" +
-        "• O link não aponta direto para o arquivo .txt (ex: Google Drive de compartilhamento)\n" +
-        "• O servidor bloqueia requisições de outros sites (CORS)\n" +
-        "• A URL está incorreta ou o arquivo não é público\n\n" +
-        "✅ Solução recomendada: hospede o arquivo no GitHub e use o link 'Raw', formato:\n" +
-        "https://raw.githubusercontent.com/usuario/repositorio/main/dados.txt\n\n" +
-        "Detalhe técnico: " + err.message
-      );
+      console.warn("Falha ao carregar dados remotos:", err.message);
+      statusRemoto.textContent = manual
+        ? "⚠️ Não foi possível atualizar agora. Exibindo dados salvos localmente."
+        : "⚠️ Dados remotos indisponíveis. Exibindo dados salvos localmente.";
+      atualizarTudo();
     });
 }
 
-// Retorna o último mês (1-12) que possui QUALQUER lançamento no ano selecionado.
-function obterUltimoMesComLancamento() {
-  let ultimo = 0;
-  dados
-    .filter(d => d.ano === anoSelecionado)
-    .forEach(d => { if (d.mes > ultimo) ultimo = d.mes; });
-  return ultimo;
-}
-
-// Calcula o saldo acumulado final de dezembro de um ano específico,
-// usando o saldo inicial daquele ano (manual, se houver) + movimentações do próprio ano.
-// Não é recursivo em relação a "obterSaldoInicialEfetivo" para evitar loops:
-// aqui usamos diretamente saldosIniciais[ano] (se definido) ou 0 como base local do ano.
-function calcularSaldoFinalDoAno(ano, visitados = new Set()) {
-  if (visitados.has(ano)) return 0; // proteção contra ciclos improváveis
-  visitados.add(ano);
-
-  let saldoInicialDoAno;
-  if (saldosIniciais.hasOwnProperty(ano)) {
-    saldoInicialDoAno = saldosIniciais[ano];
+/* ===================== LOGIN / MODO DE EDIÇÃO ===================== */
+btnEntrar.addEventListener("click", () => {
+  if (inputSenha.value === SENHA_EDICAO) {
+    modoEdicao = true;
+    areaLogado.classList.remove("oculto");
+    cardLancamento.classList.remove("oculto");
+    thAcao.classList.remove("oculto");
+    msgLogin.textContent = "";
+    inputSenha.value = "";
+    renderizarTabela();
   } else {
-    const anoAnterior = ano - 1;
-    const existeAnoAnterior = dados.some(d => d.ano === anoAnterior) || saldosIniciais.hasOwnProperty(anoAnterior);
-    saldoInicialDoAno = existeAnoAnterior ? calcularSaldoFinalDoAno(anoAnterior, visitados) : 0;
+    msgLogin.textContent = "❌ Senha incorreta.";
+    msgLogin.className = "msg erro";
   }
+});
 
-  let acumulado = saldoInicialDoAno;
-  dados
-    .filter(d => d.ano === ano)
-    .sort((a, b) => a.mes - b.mes)
-    .forEach(d => {
-      if (d.tipo === "receita") acumulado += d.valor;
-      if (d.tipo === "despesa") acumulado -= d.valor;
-    });
+btnSair.addEventListener("click", () => {
+  modoEdicao = false;
+  areaLogado.classList.add("oculto");
+  cardLancamento.classList.add("oculto");
+  thAcao.classList.add("oculto");
+  renderizarTabela();
+});
 
-  return acumulado;
-}
+/* ===================== ADICIONAR LANÇAMENTO ===================== */
+btnAdicionar.addEventListener("click", () => {
+  const ano = parseInt(inputAno.value, 10);
+  const mes = parseInt(inputMes.value, 10);
+  const tipo = inputTipo.value;
+  const categoria = inputCategoria.value.trim();
+  const descricao = inputDescricao.value.trim();
+  const valor = parseFloat(inputValor.value);
 
-// Determina o saldo inicial do ano selecionado:
-// - Se o usuário definiu manualmente, usa esse valor.
-// - Caso contrário, herda automaticamente o saldo acumulado final de dezembro do ano anterior.
-function obterSaldoInicialEfetivo() {
-  if (saldosIniciais.hasOwnProperty(anoSelecionado)) {
-    return saldosIniciais[anoSelecionado];
-  }
-  const anoAnterior = anoSelecionado - 1;
-  const existeAnoAnterior = dados.some(d => d.ano === anoAnterior) || saldosIniciais.hasOwnProperty(anoAnterior);
-  if (existeAnoAnterior) {
-    return calcularSaldoFinalDoAno(anoAnterior);
-  }
-  return 0;
-}
-
-function calcularResumo() {
-  const resumo = meses.map((_, i) => ({
-    mes: i + 1,
-    receita: 0,
-    despesa: 0,
-    fundo: 0
-  }));
-
-  dados
-    .filter(d => d.ano === anoSelecionado)
-    .forEach(d => {
-      const idx = d.mes - 1;
-      if (idx < 0 || idx > 11) return;
-      if (d.tipo === "receita") resumo[idx].receita += d.valor;
-      if (d.tipo === "despesa") resumo[idx].despesa += d.valor;
-      if (d.tipo === "fundo") resumo[idx].fundo += d.valor;
-    });
-
-  const saldoInicial = obterSaldoInicialEfetivo();
-
-  let acumuladoFundo = 0;
-  let acumuladoSaldo = saldoInicial; // ✅ herdado automaticamente de dezembro do ano anterior
-  resumo.forEach(r => {
-    acumuladoFundo += r.fundo;
-    r.fundoAcumulado = acumuladoFundo;
-
-    r.saldoMensal = r.receita - r.despesa;   // ✅ saldo isolado do mês
-    acumuladoSaldo += r.saldoMensal;
-    r.saldoAcumulado = acumuladoSaldo;       // ✅ saldo acumulado (caixa)
-  });
-
-  return resumo;
-}
-
-function renderizarResumo() {
-  const resumo = calcularResumo();
-  const saldoInicial = obterSaldoInicialEfetivo();
-  const definidoManualmente = saldosIniciais.hasOwnProperty(anoSelecionado);
-
-  document.getElementById("anoSaldoInicial").textContent = anoSelecionado;
-  document.getElementById("inSaldoInicial").value = definidoManualmente ? saldosIniciais[anoSelecionado] : "";
-  document.getElementById("inSaldoInicial").placeholder = definidoManualmente
-    ? "0.00"
-    : `Automático: R$ ${saldoInicial.toFixed(2)} (herdado de ${anoSelecionado - 1})`;
-
-  const tbody = document.querySelector("#tabelaResumo tbody");
-  tbody.innerHTML = "";
-
-  tbody.innerHTML += `
-    <tr style="background:#f0f4f8; font-style:italic;">
-      <td>Saldo Inicial ${definidoManualmente ? "" : "<span class='tag-auto'>(auto)</span>"}</td>
-      <td>-</td>
-      <td>-</td>
-      <td>-</td>
-      <td style="color:${saldoInicial>=0?'#27ae60':'#c0392b'}">R$ ${saldoInicial.toFixed(2)}</td>
-      <td>-</td>
-    </tr>`;
-
-  resumo.forEach(r => {
-    tbody.innerHTML += `
-      <tr>
-        <td>${meses[r.mes - 1]}</td>
-        <td class="receita">R$ ${r.receita.toFixed(2)}</td>
-        <td class="despesa">R$ ${r.despesa.toFixed(2)}</td>
-        <td style="color:${r.saldoMensal>=0?'#27ae60':'#c0392b'}">R$ ${r.saldoMensal.toFixed(2)}</td>
-        <td style="color:${r.saldoAcumulado>=0?'#27ae60':'#c0392b'}">R$ ${r.saldoAcumulado.toFixed(2)}</td>
-        <td class="fundo">R$ ${r.fundoAcumulado.toFixed(2)}</td>
-      </tr>`;
-  });
-}
-
-function renderizarGrafico() {
-  const resumo = calcularResumo();
-  const ultimoMes = obterUltimoMesComLancamento();
-
-  const dadosReceita = resumo.map(r => r.mes <= ultimoMes ? r.receita : null);
-  const dadosDespesa = resumo.map(r => r.mes <= ultimoMes ? r.despesa : null);
-  const dadosFundo = resumo.map(r => r.mes <= ultimoMes ? r.fundoAcumulado : null);
-  const dadosSaldoMensal = resumo.map(r => r.mes <= ultimoMes ? r.saldoMensal : null);
-  const dadosSaldoAcumulado = resumo.map(r => r.mes <= ultimoMes ? r.saldoAcumulado : null);
-
-  const ctx = document.getElementById("grafico").getContext("2d");
-  if (chart) chart.destroy();
-  chart = new Chart(ctx, {
-    type: "line",
-    data: {
-      labels: meses,
-      datasets: [
-        {
-          label: "Receita",
-          data: dadosReceita,
-          borderColor: "#27ae60",
-          backgroundColor: "#27ae6033",
-          tension: 0.3,
-          spanGaps: false
-        },
-        {
-          label: "Despesa",
-          data: dadosDespesa,
-          borderColor: "#c0392b",
-          backgroundColor: "#c0392b33",
-          tension: 0.3,
-          spanGaps: false
-        },
-        {
-          label: "Saldo Mensal",
-          data: dadosSaldoMensal,
-          borderColor: "#f39c12",
-          backgroundColor: "#f39c1233",
-          tension: 0.3,
-          spanGaps: false
-        },
-        {
-          label: "Fundo de Reserva (acum.)",
-          data: dadosFundo,
-          borderColor: "#2980b9",
-          backgroundColor: "#2980b933",
-          tension: 0.3,
-          spanGaps: false
-        },
-        {
-          label: "Saldo Acumulado (Caixa)",
-          data: dadosSaldoAcumulado,
-          borderColor: "#8e44ad",
-          backgroundColor: "#8e44ad33",
-          borderDash: [6, 4],
-          tension: 0.3,
-          spanGaps: false
-        }
-      ]
-    },
-    options: {
-      responsive: true,
-      plugins: { legend: { position: "bottom" } },
-      scales: { y: { beginAtZero: false } }
-    }
-  });
-}
-
-function renderizarLista() {
-  const filtro = parseInt(document.getElementById("filtroMes").value);
-  const lista = document.getElementById("listaLancamentos");
-  const itens = dados
-    .map((d, i) => ({ ...d, idx: i }))
-    .filter(d => d.ano === anoSelecionado && (filtro === 0 || d.mes === filtro))
-    .sort((a, b) => a.mes - b.mes);
-
-  lista.innerHTML = "";
-  if (itens.length === 0) {
-    lista.innerHTML = "<p class='small-note'>Nenhum lançamento encontrado.</p>";
-    atualizarBarraSelecao();
+  if (!ano || !mes || !categoria || isNaN(valor) || valor <= 0) {
+    msgLancamento.textContent = "⚠️ Preencha todos os campos corretamente.";
+    msgLancamento.className = "msg erro";
     return;
   }
 
-  itens.forEach(item => {
-    const marcado = selecionados.has(item.idx) ? "checked" : "";
-    lista.innerHTML += `
-      <div class="item-lanc">
-        <div class="info">
-          ${modoEdicao ? `<input type="checkbox" ${marcado} onchange="toggleSelecionado(${item.idx})">` : ""}
-          <span>
-            <b>${meses[item.mes - 1]}/${item.ano}</b> — 
-            <span class="${item.tipo}">${item.tipo.toUpperCase()}</span> — 
-            ${item.categoria} (${item.descricao || "-"}) — 
-            R$ ${item.valor.toFixed(2)}
-          </span>
-        </div>
-      </div>`;
-  });
+  dados.push({ ano, mes, tipo, categoria, descricao, valor });
+  salvarLocal();
+  popularSeletorAno();
+  atualizarTudo();
 
-  atualizarBarraSelecao();
+  inputCategoria.value = "";
+  inputDescricao.value = "";
+  inputValor.value = "";
+  msgLancamento.textContent = "✅ Lançamento adicionado! Não se esqueça de exportar e subir o .txt atualizado no GitHub.";
+  msgLancamento.className = "msg ok";
+});
+
+/* ===================== EXCLUIR LANÇAMENTO ===================== */
+function excluirLancamento(index) {
+  if (!confirm("Excluir este lançamento?")) return;
+  dados.splice(index, 1);
+  salvarLocal();
+  popularSeletorAno();
+  atualizarTudo();
 }
 
-function toggleSelecionado(idx) {
-  if (selecionados.has(idx)) {
-    selecionados.delete(idx);
-  } else {
-    selecionados.add(idx);
-  }
-  atualizarBarraSelecao();
-}
-
-function atualizarBarraSelecao() {
-  const barra = document.getElementById("barraSelecao");
-  const contador = document.getElementById("contadorSelecionados");
-  if (selecionados.size > 0) {
-    barra.classList.add("ativa");
-    contador.textContent = `${selecionados.size} selecionado(s)`;
-  } else {
-    barra.classList.remove("ativa");
-  }
-}
-
-function excluirSelecionados() {
-  if (selecionados.size === 0) return;
-  if (!confirm(`Excluir ${selecionados.size} lançamento(s) selecionado(s)?`)) return;
-
-  const indicesOrdenados = Array.from(selecionados).sort((a, b) => b - a);
-  indicesOrdenados.forEach(idx => dados.splice(idx, 1));
-
-  selecionados.clear();
-  salvar();
-}
-
-function cancelarSelecao() {
-  selecionados.clear();
-  renderizarLista();
-}
-
-function exportarTXT() {
-  if (!modoEdicao) return;
-  const linhas = dados.map(d => `${d.ano};${d.mes};${d.tipo};${d.categoria};${d.descricao};${d.valor}`);
-  const blob = new Blob([linhas.join("\n")], { type: "text/plain" });
+/* ===================== EXPORTAR / IMPORTAR .TXT ===================== */
+btnExportar.addEventListener("click", () => {
+  const conteudo = dados.map(linhaDeItem).join("\n");
+  const blob = new Blob([conteudo], { type: "text/plain;charset=utf-8" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
   a.download = "dados_condominio.txt";
   a.click();
+  URL.revokeObjectURL(url);
+  msgArquivo.textContent = "⬇️ Arquivo exportado. Suba-o no GitHub substituindo o arquivo 'dados_condominio.txt'.";
+  msgArquivo.className = "msg ok";
+});
+
+inputImportar.addEventListener("change", (ev) => {
+  const arquivo = ev.target.files[0];
+  if (!arquivo) return;
+  const leitor = new FileReader();
+  leitor.onload = () => {
+    const linhas = leitor.result.split("\n").map(l => l.trim()).filter(l => l);
+    const novosDados = [];
+    linhas.forEach(l => {
+      const item = parseLinha(l);
+      if (item && !isNaN(item.ano) && !isNaN(item.mes) && !isNaN(item.valor)) {
+        novosDados.push(item);
+      }
+    });
+    dados = novosDados;
+    salvarLocal();
+    popularSeletorAno();
+    atualizarTudo();
+    msgArquivo.textContent = `✅ ${dados.length} lançamentos importados com sucesso.`;
+    msgArquivo.className = "msg ok";
+  };
+  leitor.readAsText(arquivo, "UTF-8");
+});
+
+btnLimparTudo.addEventListener("click", () => {
+  if (!confirm("Isso vai apagar TODOS os lançamentos locais. Continuar?")) return;
+  dados = [];
+  salvarLocal();
+  popularSeletorAno();
+  atualizarTudo();
+});
+
+/* ===================== FILTROS ===================== */
+function popularSeletorAno() {
+  const anos = [...new Set(dados.map(d => d.ano))].sort((a, b) => b - a);
+  const valorAtual = filtroAno.value;
+  filtroAno.innerHTML = '<option value="todos">Todos</option>' +
+    anos.map(a => `<option value="${a}">${a}</option>`).join("");
+  if (anos.includes(parseInt(valorAtual))) filtroAno.value = valorAtual;
 }
 
-function limparAno() {
-  if (!modoEdicao) return;
-  if (confirm(`Isso apagará todos os lançamentos de ${anoSelecionado}. Continuar?`)) {
-    dados = dados.filter(d => d.ano !== anoSelecionado);
-    delete saldosIniciais[anoSelecionado];
-    localStorage.setItem("condominioSaldosIniciais", JSON.stringify(saldosIniciais));
-    selecionados.clear();
-    salvar();
-    popularSeletorAno();
-  }
+[filtroAno, filtroMes, filtroTipo].forEach(f => f.addEventListener("change", atualizarTudo));
+
+function obterDadosFiltrados() {
+  return dados.filter(d => {
+    const okAno = filtroAno.value === "todos" || d.ano === parseInt(filtroAno.value);
+    const okMes = filtroMes.value === "todos" || d.mes === parseInt(filtroMes.value);
+    const okTipo = filtroTipo.value === "todos" || d.tipo === filtroTipo.value;
+    return okAno && okMes && okTipo;
+  });
 }
 
-function limparTudo() {
-  if (!modoEdicao) return;
-  if (confirm("Isso apagará TODOS os lançamentos de TODOS os anos. Continuar?")) {
-    dados = [];
-    saldosIniciais = {};
-    localStorage.setItem("condominioSaldosIniciais", JSON.stringify(saldosIniciais));
-    selecionados.clear();
-    salvar();
-    popularSeletorAno();
+/* ===================== RENDERIZAÇÃO ===================== */
+function renderizarTabela() {
+  const filtrados = obterDadosFiltrados();
+  corpoTabela.innerHTML = "";
+
+  if (filtrados.length === 0) {
+    corpoTabela.innerHTML = `<tr><td colspan="7" style="text-align:center; opacity:.6;">Nenhum lançamento encontrado.</td></tr>`;
+    return;
   }
+
+  filtrados
+    .map((item) => ({ item, indexOriginal: dados.indexOf(item) }))
+    .sort((a, b) => b.item.ano - a.item.ano || b.item.mes - a.item.mes)
+    .forEach(({ item, indexOriginal }) => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${item.ano}</td>
+        <td>${nomesMeses[item.mes] || item.mes}</td>
+        <td class="${item.tipo}">${item.tipo === "receita" ? "Receita" : "Despesa"}</td>
+        <td>${item.categoria}</td>
+        <td>${item.descricao || "-"}</td>
+        <td class="${item.tipo}">${formatarMoeda(item.valor)}</td>
+        ${modoEdicao ? `<td><button class="secondary" style="width:auto; padding:4px 10px;" onclick="excluirLancamento(${indexOriginal})">🗑️</button></td>` : ""}
+      `;
+      corpoTabela.appendChild(tr);
+    });
+}
+
+function renderizarResumo() {
+  const filtrados = obterDadosFiltrados();
+  const receitas = filtrados.filter(d => d.tipo === "receita").reduce((s, d) => s + d.valor, 0);
+  const despesas = filtrados.filter(d => d.tipo === "despesa").reduce((s, d) => s + d.valor, 0);
+  const saldo = receitas - despesas;
+
+  totalReceitas.textContent = formatarMoeda(receitas);
+  totalDespesas.textContent = formatarMoeda(despesas);
+  saldoTotal.textContent = formatarMoeda(saldo);
+  saldoTotal.style.color = saldo >= 0 ? "var(--receita)" : "var(--despesa)";
 }
 
 function atualizarTudo() {
-  document.getElementById("anoResumo").textContent = anoSelecionado;
   renderizarResumo();
-  renderizarGrafico();
-  renderizarLista();
+  renderizarTabela();
 }
 
-// Inicialização
-popularSelects();
-popularSeletorAno();
+/* ===================== MODO ESCURO ===================== */
+function aplicarModo() {
+  const salvo = localStorage.getItem("condominioModo");
+  if (salvo === "dark") {
+    document.body.classList.add("dark");
+    btnModo.textContent = "☀️ Modo claro";
+  }
+}
+
+btnModo.addEventListener("click", () => {
+  document.body.classList.toggle("dark");
+  const escuro = document.body.classList.contains("dark");
+  btnModo.textContent = escuro ? "☀️ Modo claro" : "🌙 Modo escuro";
+  localStorage.setItem("condominioModo", escuro ? "dark" : "light");
+});
+
+/* ===================== BOTÃO RECARREGAR ===================== */
+btnRecarregar.addEventListener("click", () => carregarDadosRemotos(true));
+
+/* ===================== INICIALIZAÇÃO ===================== */
+carregarLocal();
 aplicarModo();
+popularSeletorAno();
 atualizarTudo();
+carregarDadosRemotos(); // busca automaticamente a versão atual do GitHub
 </script>
 
 </body>
