@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gestão Financeira do Condomínio</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, Roboto, Arial, sans-serif;
+    margin: 0; padding: 0;
+    background: #f4f6f8;
+    color: #222;
+  }
+  header {
+    background: #2c3e50;
+    color: white;
+    padding: 16px;
+    text-align: center;
+    position: relative;
+  }
+  header h1 { margin: 0; font-size: 1.3rem; }
+  #btnModo {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    width: auto;
+    padding: 6px 10px;
+    font-size: 0.75rem;
+    background: #7f8c8d;
+    border-radius: 6px;
+    border: none;
+    color: white;
+    cursor: pointer;
+  }
+  #btnModo.ativo { background: #27ae60; }
+  .seletor-ano {
+    margin-top: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+  }
+  .seletor-ano select {
+    width: auto;
+    padding: 6px 10px;
+    border-radius: 6px;
+    border: none;
+    font-weight: bold;
+  }
+  .container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 12px;
+  }
+  .card {
+    background: white;
+    border-radius: 10px;
+    padding: 16px;
+    margin-bottom: 16px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+  }
+  .card h2 { margin-top: 0; font-size: 1.1rem; color: #2c3e50; }
+  label { display: block; font-size: 0.85rem; margin: 8px 0 4px; color: #555; }
+  input, select, textarea, button {
+    width: 100%;
+    padding: 10px;
+    font-size: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+  }
+  button {
+    background: #2c3e50;
+    color: white;
+    border: none;
+    margin-top: 12px;
+    cursor: pointer;
+    font-weight: bold;
+  }
+  button:hover { background: #1a252f; }
+  .btn-secondary { background: #7f8c8d; }
+  .btn-danger { background: #c0392b; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.8rem;
+    margin-top: 10px;
+  }
+  th, td {
+    border-bottom: 1px solid #eee;
+    padding: 6px 4px;
+    text-align: right;
+  }
+  th:first-child, td:first-child { text-align: left; }
+  .receita { color: #27ae60; }
+  .despesa { color: #c0392b; }
+  .fundo { color: #2980b9; }
+  .row-flex { display: flex; gap: 8px; }
+  .row-flex > div { flex: 1; }
+  .small-note { font-size: 0.75rem; color: #888; margin-top: 4px; }
+  .lancamentos-lista { max-height: 260px; overflow-y: auto; margin-top: 10px; }
+  .item-lanc {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 0;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 0.85rem;
+    gap: 8px;
+  }
+  .item-lanc .info { display: flex; align-items: center; gap: 8px; flex: 1; }
+  .item-lanc input[type="checkbox"] { width: auto; margin: 0; }
+  .somente-edicao { display: none; }
+  .aviso-leitura {
+    background: #fff3cd;
+    border: 1px solid #ffe69c;
+    color: #7a5b00;
+    padding: 10px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    text-align: center;
+    margin-bottom: 16px;
+  }
+  .barra-selecao {
+    display: none;
+    background: #ffe8e8;
+    border: 1px solid #f5b7b7;
+    border-radius: 6px;
+    padding: 8px 10px;
+    margin-bottom: 10px;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.85rem;
+  }
+  .barra-selecao.ativa { display: flex; }
+  .barra-selecao button {
+    width: auto;
+    margin: 0;
+    padding: 6px 10px;
+    font-size: 0.8rem;
+    background: #c0392b;
+  }
+  .barra-selecao .btn-cancelar { background: #7f8c8d; margin-left: 6px; }
+  .tag-auto {
+    font-size: 0.7rem;
+    color: #2980b9;
+    font-weight: normal;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🏢 Gestão Financeira do Condomínio</h1>
+  <div class="seletor-ano">
+    <label style="margin:0; color:white; font-size:0.85rem;">Ano:</label>
+    <select id="seletorAno" onchange="mudarAno()"></select>
+  </div>
+  <button id="btnModo" onclick="alternarModo()">🔒 Entrar em modo edição</button>
+</header>
+
+<div class="container">
+
+  <div class="aviso-leitura" id="avisoLeitura">
+    👁️ Modo leitura — visualização das receitas, despesas e evolução do condomínio.
+  </div>
+
+  <!-- SALDO INICIAL -->
+  <div class="card somente-edicao" id="cardSaldoInicial">
+    <h2>💰 Saldo de Caixa Inicial</h2>
+    <p class="small-note">
+      Informe o saldo de caixa existente <b>antes</b> do primeiro lançamento de Janeiro do ano selecionado.
+      Se deixado em branco, o valor é calculado <b>automaticamente</b> como o saldo acumulado final de
+      dezembro do ano anterior (encadeamento entre anos).
+    </p>
+    <label>Saldo inicial de <span id="anoSaldoInicial"></span> (R$)</label>
+    <input type="number" id="inSaldoInicial" step="0.01" placeholder="0.00" onchange="salvarSaldoInicial()">
+    <button class="btn-secondary" type="button" onclick="removerSaldoInicialManual()">
+      Remover valor manual (voltar ao automático)
+    </button>
+  </div>
+
+  <!-- LANÇAMENTO MANUAL -->
+  <div class="card somente-edicao" id="cardLancamento">
+    <h2>➕ Novo Lançamento</h2>
+    <div class="row-flex">
+      <div>
+        <label>Ano</label>
+        <input type="number" id="inAno" placeholder="Ex: 2026">
+      </div>
+      <div>
+        <label>Mês</label>
+        <select id="inMes"></select>
+      </div>
+    </div>
+    <label>Tipo</label>
+    <select id="inTipo">
+      <option value="receita">Receita</option>
+      <option value="despesa">Despesa</option>
+      <option value="fundo">Fundo de Reserva</option>
+    </select>
+    <label>Categoria</label>
+    <input type="text" id="inCategoria" placeholder="Ex: Taxa condominial, Manutenção, Energia...">
+    <label>Descrição</label>
+    <input type="text" id="inDescricao" placeholder="Detalhe do lançamento">
+    <label>Valor (R$)</label>
+    <input type="number" id="inValor" step="0.01" placeholder="0.00">
+    <button onclick="adicionarLancamento()">Adicionar Lançamento</button>
+  </div>
+
+  <!-- IMPORTAÇÃO -->
+  <div class="card somente-edicao" id="cardImportacao">
+    <h2>📄 Importar de arquivo .txt</h2>
+    <p class="small-note">
+      Formato esperado por linha: <code>ano;mes;tipo;categoria;descricao;valor</code><br>
+      Ex: <code>2026;3;receita;Taxa condominial;Cota março;15000.00</code><br>
+      tipo = receita, despesa ou fundo
+    </p>
+    <label>Carregar arquivo local (.txt)</label>
+    <input type="file" id="fileInput" accept=".txt">
+    <label>Ou colar o conteúdo diretamente</label>
+    <textarea id="textareaImport" rows="4" placeholder="Cole aqui as linhas..."></textarea>
+    <button onclick="importarTextarea()">Importar do texto colado</button>
+    <div class="small-note">
+      <b>Para que os moradores vejam os mesmos dados que você:</b> hospede um arquivo .txt público
+      e cole a URL abaixo. O app carrega automaticamente ao abrir.<br><br>
+      ⚠️ <b>Google Drive geralmente não funciona</b> (bloqueia CORS). Use um link
+      <b>"Raw"</b> do GitHub — é gratuito, público e confiável:
+      <code>https://raw.githubusercontent.com/usuario/repo/main/dados.txt</code>
+    </div>
+    <label>URL do arquivo .txt remoto (opcional)</label>
+    <input type="text" id="urlRemota" placeholder="https://raw.githubusercontent.com/.../dados.txt">
+    <button class="btn-secondary" onclick="carregarURLRemota()">Carregar da URL</button>
+  </div>
+
+  <!-- RESUMO MENSAL -->
+  <div class="card">
+    <h2>📊 Resumo Mensal — <span id="anoResumo"></span></h2>
+    <table id="tabelaResumo">
+      <thead>
+        <tr>
+          <th>Mês</th>
+          <th>Receita</th>
+          <th>Despesa</th>
+          <th>Saldo Mensal</th>
+          <th>Saldo Acumulado</th>
+          <th>Fundo Reserva (acum.)</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <!-- GRÁFICO -->
+  <div class="card">
+    <h2>📈 Evolução Mensal</h2>
+    <canvas id="grafico" height="220"></canvas>
+  </div>
+
+  <!-- LISTA DE LANÇAMENTOS -->
+  <div class="card">
+    <h2>🧾 Lançamentos do Mês</h2>
+    <label>Filtrar por mês</label>
+    <select id="filtroMes" onchange="renderizarLista()"></select>
+
+    <div class="barra-selecao" id="barraSelecao">
+      <span id="contadorSelecionados">0 selecionado(s)</span>
+      <div>
+        <button onclick="excluirSelecionados()">🗑️ Excluir selecionados</button>
+        <button class="btn-cancelar" onclick="cancelarSelecao()">Cancelar</button>
+      </div>
+    </div>
+
+    <div class="lancamentos-lista" id="listaLancamentos"></div>
+  </div>
+
+  <!-- EXPORTAR / RESET -->
+  <div class="card somente-edicao" id="cardOpcoes">
+    <h2>⚙️ Opções</h2>
+    <button class="btn-secondary" onclick="exportarTXT()">Exportar dados (.txt)</button>
+    <button class="btn-danger" onclick="limparAno()">Limpar dados do ano selecionado</button>
+    <button class="btn-danger" onclick="limparTudo()">Limpar TODOS os anos</button>
+  </div>
+
+</div>
+
+<script>
+// ⚠️ Altere esta senha antes de publicar o app.
+const SENHA_EDICAO = "condominio2026";
+
+const meses = ["Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","Nov","Dez"];
+let dados = JSON.parse(localStorage.getItem("condominioDados") || "[]");
+let saldosIniciais = JSON.parse(localStorage.getItem("condominioSaldosIniciais") || "{}");
+let chart = null;
+let modoEdicao = sessionStorage.getItem("modoEdicao") === "true";
+let anoSelecionado = parseInt(localStorage.getItem("anoSelecionado")) || new Date().getFullYear();
+let selecionados = new Set(); // índices selecionados para exclusão em lote
+
+function alternarModo() {
+  if (modoEdicao) {
+    modoEdicao = false;
+    sessionStorage.removeItem("modoEdicao");
+    aplicarModo();
+    return;
+  }
+  const senha = prompt("Digite a senha para entrar em modo edição:");
+  if (senha === null) return;
+  if (senha === SENHA_EDICAO) {
+    modoEdicao = true;
+    sessionStorage.setItem("modoEdicao", "true");
+    aplicarModo();
+  } else {
+    alert("Senha incorreta.");
+  }
+}
+
+function aplicarModo() {
+  const btn = document.getElementById("btnModo");
+  const aviso = document.getElementById("avisoLeitura");
+  const elementosEdicao = document.querySelectorAll(".somente-edicao");
+
+  if (modoEdicao) {
+    btn.textContent = "🔓 Sair do modo edição";
+    btn.classList.add("ativo");
+    aviso.style.display = "none";
+    elementosEdicao.forEach(el => el.style.display = "block");
+  } else {
+    btn.textContent = "🔒 Entrar em modo edição";
+    btn.classList.remove("ativo");
+    aviso.style.display = "block";
+    elementosEdicao.forEach(el => el.style.display = "none");
+  }
+  selecionados.clear();
+  renderizarLista();
+}
+
+function salvar() {
+  localStorage.setItem("condominioDados", JSON.stringify(dados));
+  atualizarTudo();
+}
+
+// Define manualmente o saldo inicial do ano selecionado.
+function salvarSaldoInicial() {
+  const valor = parseFloat(document.getElementById("inSaldoInicial").value);
+  if (isNaN(valor)) {
+    delete saldosIniciais[anoSelecionado];
+  } else {
+    saldosIniciais[anoSelecionado] = valor;
+  }
+  localStorage.setItem("condominioSaldosIniciais", JSON.stringify(saldosIniciais));
+  atualizarTudo();
+}
+
+// Remove o valor manual, fazendo o saldo inicial voltar a ser calculado automaticamente
+// a partir do saldo acumulado final de dezembro do ano anterior.
+function removerSaldoInicialManual() {
+  if (!modoEdicao) return;
+  delete saldosIniciais[anoSelecionado];
+  localStorage.setItem("condominioSaldosIniciais", JSON.stringify(saldosIniciais));
+  atualizarTudo();
+}
+
+function popularSelects() {
+  const selMes = document.getElementById("inMes");
+  const filtroMes = document.getElementById("filtroMes");
+  selMes.innerHTML = "";
+  filtroMes.innerHTML = '<option value="0">Todos os meses</option>';
+  meses.forEach((m, i) => {
+    selMes.innerHTML += `<option value="${i+1}">${m}</option>`;
+    filtroMes.innerHTML += `<option value="${i+1}">${m}</option>`;
+  });
+  document.getElementById("inAno").value = anoSelecionado;
+}
+
+function obterAnosDisponiveis() {
+  const anos = new Set(dados.map(d => d.ano));
+  Object.keys(saldosIniciais).forEach(a => anos.add(parseInt(a)));
+  anos.add(anoSelecionado);
+  anos.add(new Date().getFullYear());
+  return Array.from(anos).sort((a, b) => a - b);
+}
+
+function popularSeletorAno() {
+  const sel = document.getElementById("seletorAno");
+  const anos = obterAnosDisponiveis();
+  sel.innerHTML = "";
+  anos.forEach(a => {
+    sel.innerHTML += `<option value="${a}" ${a === anoSelecionado ? "selected" : ""}>${a}</option>`;
+  });
+  sel.innerHTML += `<option value="novo">+ Novo ano...</option>`;
+}
+
+function mudarAno() {
+  const sel = document.getElementById("seletorAno");
+  if (sel.value === "novo") {
+    const novoAno = prompt("Digite o novo ano (ex: 2027):");
+    const anoNum = parseInt(novoAno);
+    if (!anoNum || isNaN(anoNum)) {
+      popularSeletorAno();
+      return;
+    }
+    anoSelecionado = anoNum;
+  } else {
+    anoSelecionado = parseInt(sel.value);
+  }
+  localStorage.setItem("anoSelecionado", anoSelecionado);
+  document.getElementById("inAno").value = anoSelecionado;
+  popularSeletorAno();
+  selecionados.clear();
+  atualizarTudo();
+}
+
+function adicionarLancamento() {
+  if (!modoEdicao) { alert("Entre em modo edição para lançar dados."); return; }
+  const ano = parseInt(document.getElementById("inAno").value);
+  const mes = parseInt(document.getElementById("inMes").value);
+  const tipo = document.getElementById("inTipo").value;
+  const categoria = document.getElementById("inCategoria").value.trim();
+  const descricao = document.getElementById("inDescricao").value.trim();
+  const valor = parseFloat(document.getElementById("inValor").value);
+
+  if (!ano || !categoria || isNaN(valor)) {
+    alert("Preencha ano, categoria e valor corretamente.");
+    return;
+  }
+
+  dados.push({ ano, mes, tipo, categoria, descricao, valor });
+  salvar();
+  popularSeletorAno();
+
+  document.getElementById("inCategoria").value = "";
+  document.getElementById("inDescricao").value = "";
+  document.getElementById("inValor").value = "";
+}
+
+function parseLinha(linha) {
+  const partes = linha.split(";");
+  if (partes.length < 6) return null;
+  const [ano, mes, tipo, categoria, descricao, valor] = partes;
+  const tipoLimpo = tipo.trim().toLowerCase();
+  if (!["receita","despesa","fundo"].includes(tipoLimpo)) return null;
+  return {
+    ano: parseInt(ano),
+    mes: parseInt(mes),
+    tipo: tipoLimpo,
+    categoria: categoria.trim(),
+    descricao: descricao.trim(),
+    valor: parseFloat(valor.replace(",", "."))
+  };
+}
+
+function importarLinhas(texto) {
+  const linhas = texto.split("\n").map(l => l.trim()).filter(l => l);
+  let count = 0;
+  linhas.forEach(l => {
+    const item = parseLinha(l);
+    if (item && !isNaN(item.ano) && !isNaN(item.mes) && !isNaN(item.valor)) {
+      dados.push(item);
+      count++;
+    }
+  });
+  salvar();
+  popularSeletorAno();
+  alert(`${count} lançamento(s) importado(s).`);
+}
+
+document.getElementById("fileInput").addEventListener("change", function(e) {
+  if (!modoEdicao) return;
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    importarLinhas(ev.target.result);
+  };
+  reader.readAsText(file, "UTF-8");
+});
+
+function importarTextarea() {
+  if (!modoEdicao) { alert("Entre em modo edição para importar dados."); return; }
+  const texto = document.getElementById("textareaImport").value;
+  if (!texto.trim()) return;
+  importarLinhas(texto);
+  document.getElementById("textareaImport").value = "";
+}
+
+// Valida a resposta remota e dá mensagem de erro clara em caso de bloqueio/CORS/link errado.
+function carregarURLRemota() {
+  const url = document.getElementById("urlRemota").value.trim();
+  if (!url) return;
+
+  fetch(url)
+    .then(res => {
+      if (!res.ok) {
+        throw new Error(`O servidor respondeu com status ${res.status}. Verifique se o link é público e correto.`);
+      }
+      const contentType = res.headers.get("content-type") || "";
+      if (contentType.includes("text/html")) {
+        throw new Error(
+          "O link retornou uma página HTML, não um arquivo de texto puro. " +
+          "Isso costuma acontecer com links de compartilhamento do Google Drive. " +
+          "Use um link 'Raw' do GitHub."
+        );
+      }
+      return res.text();
+    })
+    .then(texto => {
+      dados = []; // substitui totalmente pelos dados remotos
+      importarLinhas(texto);
+    })
+    .catch(err => {
+      alert(
+        "❌ Erro ao carregar URL remota.\n\n" +
+        "Causas mais comuns:\n" +
+        "• O link não aponta direto para o arquivo .txt (ex: Google Drive de compartilhamento)\n" +
+        "• O servidor bloqueia requisições de outros sites (CORS)\n" +
+        "• A URL está incorreta ou o arquivo não é público\n\n" +
+        "✅ Solução recomendada: hospede o arquivo no GitHub e use o link 'Raw', formato:\n" +
+        "https://raw.githubusercontent.com/usuario/repositorio/main/dados.txt\n\n" +
+        "Detalhe técnico: " + err.message
+      );
+    });
+}
+
+// Retorna o último mês (1-12) que possui QUALQUER lançamento no ano selecionado.
+function obterUltimoMesComLancamento() {
+  let ultimo = 0;
+  dados
+    .filter(d => d.ano === anoSelecionado)
+    .forEach(d => { if (d.mes > ultimo) ultimo = d.mes; });
+  return ultimo;
+}
+
+// Calcula o saldo acumulado final de dezembro de um ano específico,
+// usando o saldo inicial daquele ano (manual, se houver) + movimentações do próprio ano.
+// Não é recursivo em relação a "obterSaldoInicialEfetivo" para evitar loops:
+// aqui usamos diretamente saldosIniciais[ano] (se definido) ou 0 como base local do ano.
+function calcularSaldoFinalDoAno(ano, visitados = new Set()) {
+  if (visitados.has(ano)) return 0; // proteção contra ciclos improváveis
+  visitados.add(ano);
+
+  let saldoInicialDoAno;
+  if (saldosIniciais.hasOwnProperty(ano)) {
+    saldoInicialDoAno = saldosIniciais[ano];
+  } else {
+    const anoAnterior = ano - 1;
+    const existeAnoAnterior = dados.some(d => d.ano === anoAnterior) || saldosIniciais.hasOwnProperty(anoAnterior);
+    saldoInicialDoAno = existeAnoAnterior ? calcularSaldoFinalDoAno(anoAnterior, visitados) : 0;
+  }
+
+  let acumulado = saldoInicialDoAno;
+  dados
+    .filter(d => d.ano === ano)
+    .sort((a, b) => a.mes - b.mes)
+    .forEach(d => {
+      if (d.tipo === "receita") acumulado += d.valor;
+      if (d.tipo === "despesa") acumulado -= d.valor;
+    });
+
+  return acumulado;
+}
+
+// Determina o saldo inicial do ano selecionado:
+// - Se o usuário definiu manualmente, usa esse valor.
+// - Caso contrário, herda automaticamente o saldo acumulado final de dezembro do ano anterior.
+function obterSaldoInicialEfetivo() {
+  if (saldosIniciais.hasOwnProperty(anoSelecionado)) {
+    return saldosIniciais[anoSelecionado];
+  }
+  const anoAnterior = anoSelecionado - 1;
+  const existeAnoAnterior = dados.some(d => d.ano === anoAnterior) || saldosIniciais.hasOwnProperty(anoAnterior);
+  if (existeAnoAnterior) {
+    return calcularSaldoFinalDoAno(anoAnterior);
+  }
+  return 0;
+}
+
+function calcularResumo() {
+  const resumo = meses.map((_, i) => ({
+    mes: i + 1,
+    receita: 0,
+    despesa: 0,
+    fundo: 0
+  }));
+
+  dados
+    .filter(d => d.ano === anoSelecionado)
+    .forEach(d => {
+      const idx = d.mes - 1;
+      if (idx < 0 || idx > 11) return;
+      if (d.tipo === "receita") resumo[idx].receita += d.valor;
+      if (d.tipo === "despesa") resumo[idx].despesa += d.valor;
+      if (d.tipo === "fundo") resumo[idx].fundo += d.valor;
+    });
+
+  const saldoInicial = obterSaldoInicialEfetivo();
+
+  let acumuladoFundo = 0;
+  let acumuladoSaldo = saldoInicial; // ✅ herdado automaticamente de dezembro do ano anterior
+  resumo.forEach(r => {
+    acumuladoFundo += r.fundo;
+    r.fundoAcumulado = acumuladoFundo;
+
+    r.saldoMensal = r.receita - r.despesa;   // ✅ saldo isolado do mês
+    acumuladoSaldo += r.saldoMensal;
+    r.saldoAcumulado = acumuladoSaldo;       // ✅ saldo acumulado (caixa)
+  });
+
+  return resumo;
+}
+
+function renderizarResumo() {
+  const resumo = calcularResumo();
+  const saldoInicial = obterSaldoInicialEfetivo();
+  const definidoManualmente = saldosIniciais.hasOwnProperty(anoSelecionado);
+
+  document.getElementById("anoSaldoInicial").textContent = anoSelecionado;
+  document.getElementById("inSaldoInicial").value = definidoManualmente ? saldosIniciais[anoSelecionado] : "";
+  document.getElementById("inSaldoInicial").placeholder = definidoManualmente
+    ? "0.00"
+    : `Automático: R$ ${saldoInicial.toFixed(2)} (herdado de ${anoSelecionado - 1})`;
+
+  const tbody = document.querySelector("#tabelaResumo tbody");
+  tbody.innerHTML = "";
+
+  tbody.innerHTML += `
+    <tr style="background:#f0f4f8; font-style:italic;">
+      <td>Saldo Inicial ${definidoManualmente ? "" : "<span class='tag-auto'>(auto)</span>"}</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td style="color:${saldoInicial>=0?'#27ae60':'#c0392b'}">R$ ${saldoInicial.toFixed(2)}</td>
+      <td>-</td>
+    </tr>`;
+
+  resumo.forEach(r => {
+    tbody.innerHTML += `
+      <tr>
+        <td>${meses[r.mes - 1]}</td>
+        <td class="receita">R$ ${r.receita.toFixed(2)}</td>
+        <td class="despesa">R$ ${r.despesa.toFixed(2)}</td>
+        <td style="color:${r.saldoMensal>=0?'#27ae60':'#c0392b'}">R$ ${r.saldoMensal.toFixed(2)}</td>
+        <td style="color:${r.saldoAcumulado>=0?'#27ae60':'#c0392b'}">R$ ${r.saldoAcumulado.toFixed(2)}</td>
+        <td class="fundo">R$ ${r.fundoAcumulado.toFixed(2)}</td>
+      </tr>`;
+  });
+}
+
+function renderizarGrafico() {
+  const resumo = calcularResumo();
+  const ultimoMes = obterUltimoMesComLancamento();
+
+  const dadosReceita = resumo.map(r => r.mes <= ultimoMes ? r.receita : null);
+  const dadosDespesa = resumo.map(r => r.mes <= ultimoMes ? r.despesa : null);
+  const dadosFundo = resumo.map(r => r.mes <= ultimoMes ? r.fundoAcumulado : null);
+  const dadosSaldoMensal = resumo.map(r => r.mes <= ultimoMes ? r.saldoMensal : null);
+  const dadosSaldoAcumulado = resumo.map(r => r.mes <= ultimoMes ? r.saldoAcumulado : null);
+
+  const ctx = document.getElementById("grafico").getContext("2d");
+  if (chart) chart.destroy();
+  chart = new Chart(ctx, {
+    type: "line",
+    data: {
+      labels: meses,
+      datasets: [
+        {
+          label: "Receita",
+          data: dadosReceita,
+          borderColor: "#27ae60",
+          backgroundColor: "#27ae6033",
+          tension: 0.3,
+          spanGaps: false
+        },
+        {
+          label: "Despesa",
+          data: dadosDespesa,
+          borderColor: "#c0392b",
+          backgroundColor: "#c0392b33",
+          tension: 0.3,
+          spanGaps: false
+        },
+        {
+          label: "Saldo Mensal",
+          data: dadosSaldoMensal,
+          borderColor: "#f39c12",
+          backgroundColor: "#f39c1233",
+          tension: 0.3,
+          spanGaps: false
+        },
+        {
+          label: "Fundo de Reserva (acum.)",
+          data: dadosFundo,
+          borderColor: "#2980b9",
+          backgroundColor: "#2980b933",
+          tension: 0.3,
+          spanGaps: false
+        },
+        {
+          label: "Saldo Acumulado (Caixa)",
+          data: dadosSaldoAcumulado,
+          borderColor: "#8e44ad",
+          backgroundColor: "#8e44ad33",
+          borderDash: [6, 4],
+          tension: 0.3,
+          spanGaps: false
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { position: "bottom" } },
+      scales: { y: { beginAtZero: false } }
+    }
+  });
+}
+
+function renderizarLista() {
+  const filtro = parseInt(document.getElementById("filtroMes").value);
+  const lista = document.getElementById("listaLancamentos");
+  const itens = dados
+    .map((d, i) => ({ ...d, idx: i }))
+    .filter(d => d.ano === anoSelecionado && (filtro === 0 || d.mes === filtro))
+    .sort((a, b) => a.mes - b.mes);
+
+  lista.innerHTML = "";
+  if (itens.length === 0) {
+    lista.innerHTML = "<p class='small-note'>Nenhum lançamento encontrado.</p>";
+    atualizarBarraSelecao();
+    return;
+  }
+
+  itens.forEach(item => {
+    const marcado = selecionados.has(item.idx) ? "checked" : "";
+    lista.innerHTML += `
+      <div class="item-lanc">
+        <div class="info">
+          ${modoEdicao ? `<input type="checkbox" ${marcado} onchange="toggleSelecionado(${item.idx})">` : ""}
+          <span>
+            <b>${meses[item.mes - 1]}/${item.ano}</b> — 
+            <span class="${item.tipo}">${item.tipo.toUpperCase()}</span> — 
+            ${item.categoria} (${item.descricao || "-"}) — 
+            R$ ${item.valor.toFixed(2)}
+          </span>
+        </div>
+      </div>`;
+  });
+
+  atualizarBarraSelecao();
+}
+
+function toggleSelecionado(idx) {
+  if (selecionados.has(idx)) {
+    selecionados.delete(idx);
+  } else {
+    selecionados.add(idx);
+  }
+  atualizarBarraSelecao();
+}
+
+function atualizarBarraSelecao() {
+  const barra = document.getElementById("barraSelecao");
+  const contador = document.getElementById("contadorSelecionados");
+  if (selecionados.size > 0) {
+    barra.classList.add("ativa");
+    contador.textContent = `${selecionados.size} selecionado(s)`;
+  } else {
+    barra.classList.remove("ativa");
+  }
+}
+
+function excluirSelecionados() {
+  if (selecionados.size === 0) return;
+  if (!confirm(`Excluir ${selecionados.size} lançamento(s) selecionado(s)?`)) return;
+
+  const indicesOrdenados = Array.from(selecionados).sort((a, b) => b - a);
+  indicesOrdenados.forEach(idx => dados.splice(idx, 1));
+
+  selecionados.clear();
+  salvar();
+}
+
+function cancelarSelecao() {
+  selecionados.clear();
+  renderizarLista();
+}
+
+function exportarTXT() {
+  if (!modoEdicao) return;
+  const linhas = dados.map(d => `${d.ano};${d.mes};${d.tipo};${d.categoria};${d.descricao};${d.valor}`);
+  const blob = new Blob([linhas.join("\n")], { type: "text/plain" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "dados_condominio.txt";
+  a.click();
+}
+
+function limparAno() {
+  if (!modoEdicao) return;
+  if (confirm(`Isso apagará todos os lançamentos de ${anoSelecionado}. Continuar?`)) {
+    dados = dados.filter(d => d.ano !== anoSelecionado);
+    delete saldosIniciais[anoSelecionado];
+    localStorage.setItem("condominioSaldosIniciais", JSON.stringify(saldosIniciais));
+    selecionados.clear();
+    salvar();
+    popularSeletorAno();
+  }
+}
+
+function limparTudo() {
+  if (!modoEdicao) return;
+  if (confirm("Isso apagará TODOS os lançamentos de TODOS os anos. Continuar?")) {
+    dados = [];
+    saldosIniciais = {};
+    localStorage.setItem("condominioSaldosIniciais", JSON.stringify(saldosIniciais));
+    selecionados.clear();
+    salvar();
+    popularSeletorAno();
+  }
+}
+
+function atualizarTudo() {
+  document.getElementById("anoResumo").textContent = anoSelecionado;
+  renderizarResumo();
+  renderizarGrafico();
+  renderizarLista();
+}
+
+// Inicialização
+popularSelects();
+popularSeletorAno();
+aplicarModo();
+atualizarTudo();
+</script>
+
+</body>
+</html>
