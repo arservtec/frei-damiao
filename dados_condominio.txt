@@ -53,7 +53,6 @@
 2021;8;despesa;Prestador de Serviço - vidro;Prestador de Serviço - vidro;110.00
 2021;8;despesa;Prestador de Serviço antena coletiva;Prestador de Serviço antena coletiva Ago/21;417.00
 2021;7;receita;Taxa Ordinária - Julho / 2021;Apto 001, 002, 003, Apto 102, 103, Apto 201, 202, Apto 301, 302 Jun/21;2500.00
-2021;7;receita;T.O - Apto 303;T.O - Apto 303 Jul/21;250.00
 2021;7;despesa;Zelador;Zelador 30/jul;717.10
 2021;7;despesa;CELPE - 12/jun a 11/jul;CELPE Jun/21;262.26
 2021;7;despesa;Material de Limpeza;Material de Limpeza Jul/21;52.50
