@@ -1,0 +1,46 @@
+2026;1;receita;TAXA ORDINÁRIA GARANTIDORA;GARANTIDORA;4504.01
+2026;1;despesa;Zelador;Zelador;468
+2026;1;despesa;COMPESA;COMPESA;1751.9
+2026;1;despesa;CELPE;CELPE;157.2
+2026;1;despesa;Internet p cam. Seg;Internet p cam. Seg;59.99
+2026;1;despesa;Mat. de limpeza/diversos;Mat. de limpeza/diversos;168.41
+2026;1;despesa;SEGURO PREDIO parcelado;SEGURO PREDIO parcelado;104.49
+2026;1;despesa;MAT. PARA CAMERAS AVISTA;MAT. PARA CAMERAS AVISTA;900
+2026;1;despesa;DETETIZAÇÃO;DETETIZAÇÃO;300
+2026;2;receita;TAXA ORDINÁRIA GARANTIDORA;GARANTIDORA;4517.67
+2026;2;despesa;Zelador;Zelador;416
+2026;2;despesa;COMPESA;COMPESA;1766.08
+2026;2;despesa;CELPE;CELPE;150.06
+2026;2;despesa;Internet p cam. Seg;Internet p cam. Seg;59.99
+2026;2;despesa;Mat. de limpeza/diversos;Mat. de limpeza/diversos;19.9
+2026;2;despesa;SEGURO PREDIO parcelado;SEGURO PREDIO parcelado;104.49
+2026;2;despesa;MAT. P/CAMERAS parcelado;MAT. P/CAMERAS parcelado;506.55
+2026;3;receita;TAXA ORDINÁRIA GARANTIDORA;GARANTIDORA;4565.15
+2026;3;despesa;Zelador;Zelador;468
+2026;3;despesa;COMPESA;COMPESA;1815.29
+2026;3;despesa;CELPE;CELPE;161.57
+2026;3;despesa;Internet p cam. Seg;Internet p cam. Seg;59.99
+2026;3;despesa;SEGURO PREDIO parcelado;SEGURO PREDIO parcelado;104.49
+2026;3;despesa;MO+MAT P/CAMERAS parc.;MO+MAT P/CAMERAS parc.;700
+2026;4;receita;TAXA ORDINÁRIA GARANTIDORA;GARANTIDORA;4835.23
+2026;4;despesa;Zelador;Zelador;416
+2026;4;despesa;COMPESA;COMPESA;2095.11
+2026;4;despesa;CELPE;CELPE;170.74
+2026;4;despesa;Internet p cam. Seg;Internet p cam. Seg;59.99
+2026;4;despesa;SEGURO PREDIO parcelado;SEGURO PREDIO parcelado;104.49
+2026;5;receita;TAXA ORDINÁRIA GARANTIDORA;GARANTIDORA;4531.45
+2026;5;despesa;Zelador;Zelador;419
+2026;5;despesa;COMPESA;COMPESA;1780.26
+2026;5;despesa;CELPE;CELPE;159.56
+2026;5;despesa;Internet p cam. Seg;Internet p cam. Seg;59.99
+2026;5;despesa;Mat. de limpeza/diversos;Mat. de limpeza/diversos;106.4
+2026;5;despesa;SEGURO PREDIO parcelado;SEGURO PREDIO parcelado;104.49
+2026;5;despesa;MO+MAT P/CAMERAS parc.;MO+MAT P/CAMERAS parc.;279.95
+2026;5;despesa;MATERIAL ELETRICO/SENSORES;MATERIAL ELETRICO/SENSORES;53.99
+2026;5;despesa;MO ELETRICISTA;MO ELETRICISTA;60
+2026;6;receita;TAXA ORDINÁRIA GARANTIDORA;GARANTIDORA;5010.34
+2026;6;despesa;Zelador;Zelador;468
+2026;6;despesa;COMPESA;COMPESA;2276.56
+2026;6;despesa;Internet p cam. Seg;Internet p cam. Seg;59.99
+2026;6;despesa;SEGURO PREDIO parcelado;SEGURO PREDIO parcelado;104.57
+2026;6;despesa;MATERIAL ELETRICO/SENSORES;MATERIAL ELETRICO/SENSORES;393.25
